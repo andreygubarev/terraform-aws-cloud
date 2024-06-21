@@ -46,16 +46,10 @@ variable "instance_ami_owner" {
   description = "EC2 instance image owner"
 }
 
-variable "instance_cloudinit" {
+variable "instance_userdata" {
   type        = string
   description = "EC2 instance user data"
   default     = "User data"
-}
-
-variable "instance_cloudinit_type" {
-  type        = string
-  description = "EC2 instance user data MIME type"
-  default     = "text/x-shellscript"
 }
 
 variable "instance_profile" {

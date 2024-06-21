@@ -1,14 +1,3 @@
-data "cloudinit_config" "this" {
-  gzip          = true
-  base64_encode = true
-
-  part {
-    content_type = var.instance_cloudinit_type
-    content      = var.instance_cloudinit
-    filename     = "once.sh"
-  }
-}
-
 ################################################################################
 # AWS EC2 Instance
 ################################################################################
@@ -17,7 +6,7 @@ resource "aws_instance" "this" {
   ami              = var.instance_ami
   instance_type    = var.instance_type
   key_name         = var.instance_keypair
-  user_data_base64 = data.cloudinit_config.this.rendered
+  user_data_base64 = var.instance_userdata
 
   monitoring = true
 
