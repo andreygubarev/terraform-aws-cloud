@@ -48,7 +48,7 @@ variable "instance_ami_owner" {
 
 variable "instance_userdata" {
   type        = string
-  description = "EC2 instance user data"
+  description = "EC2 instance user data (base64 encoded)"
   default     = "User data"
 }
 
