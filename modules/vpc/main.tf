@@ -108,7 +108,7 @@ resource "aws_subnet" "public" {
     local.public_ipv6_netnum + index(data.aws_availability_zones.available.names, each.key)
   )
 
-  enable_dns64 = true
+  enable_dns64 = false
 
   tags = {
     "Name" = "${local.name}-public-${local.availability_zones[each.key]}"
