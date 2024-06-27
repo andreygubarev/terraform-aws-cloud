@@ -53,3 +53,7 @@ data "aws_ami" "this" {
   most_recent = true
   owners      = [var.instance_ami_owner]
 }
+
+data "aws_key_pair" "this" {
+  key_name           = var.instance_keypair
+}

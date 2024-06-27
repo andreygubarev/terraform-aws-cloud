@@ -51,22 +51,20 @@ variable "instance_ami_owner" {
   description = "EC2 instance image owner"
 }
 
-variable "instance_user_data" {
+variable "instance_userdata" {
   type        = string
-  description = "EC2 instance user data"
-  default     = "Path to the user data file"
+  description = "EC2 instance user data (base64 encoded)"
+  default     = "User data"
 }
 
-variable "instance_profile_policies" {
-  type        = list(string)
-  description = "EC2 instance profile policies"
-  default     = []
+variable "instance_profile" {
+  type        = string
+  description = "EC2 instance profile"
 }
 
-variable "instance_keypair_algoirthm" {
+variable "instance_keypair" {
   type        = string
-  description = "EC2 instance keypair algorithm"
-  default     = "ED25519"
+  description = "EC2 instance keypair"
 }
 
 ################################################################################
