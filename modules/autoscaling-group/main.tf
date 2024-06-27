@@ -31,6 +31,12 @@ resource "aws_launch_template" "this" {
   key_name                             = data.aws_key_pair.this.key_name
   user_data                            = var.instance_userdata
 
+  private_dns_name_options {
+    enable_resource_name_dns_aaaa_record = true
+    enable_resource_name_dns_a_record    = true
+    hostname_type                        = "resource-name"
+  }
+
   vpc_security_group_ids = data.aws_security_groups.this.ids
 
   iam_instance_profile { name = var.instance_profile }
@@ -49,7 +55,7 @@ resource "aws_launch_template" "this" {
 
   tag_specifications {
     resource_type = "volume"
-    tags = local.tags
+    tags          = local.tags
   }
 }
 
