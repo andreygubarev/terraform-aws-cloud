@@ -15,6 +15,12 @@ resource "aws_instance" "this" {
   subnet_id              = var.network_subnet
   vpc_security_group_ids = var.network_security_groups
 
+  private_dns_name_options {
+    enable_resource_name_dns_aaaa_record = true
+    enable_resource_name_dns_a_record    = true
+    hostname_type                        = "resource-name"
+  }
+
   root_block_device {
     volume_size = var.volume_size
     volume_type = var.volume_type
