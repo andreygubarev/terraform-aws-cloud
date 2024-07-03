@@ -355,11 +355,6 @@ resource "aws_iam_role_policy_attachment" "amazon_ec2_container_registry_readonl
   role       = aws_iam_role.this.name
 }
 
-resource "aws_iam_role_policy_attachment" "aws_key_management_service_power_user" {
-  policy_arn = "arn:aws:iam::aws:policy/AWSKeyManagementServicePowerUser"
-  role       = aws_iam_role.this.name
-}
-
 ################################################################################
 # AWS EC2 Keypair
 ################################################################################
