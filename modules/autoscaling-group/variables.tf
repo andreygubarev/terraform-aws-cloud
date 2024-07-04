@@ -77,12 +77,6 @@ variable "instance_keypair" {
 # Volume
 ################################################################################
 
-variable "volume_device_name" {
-  type        = string
-  description = "EC2 volume device name"
-  default     = "/dev/xvda"
-}
-
 variable "volume_type" {
   type        = string
   description = "EC2 volume type"
