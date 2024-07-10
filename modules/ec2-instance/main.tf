@@ -8,7 +8,7 @@ resource "aws_instance" "this" {
 
   key_name             = var.instance_keypair
   iam_instance_profile = var.instance_profile
-  user_data_base64     = var.instance_userdata
+  user_data_base64     = base64encode(var.instance_userdata)
 
   monitoring = true
 
