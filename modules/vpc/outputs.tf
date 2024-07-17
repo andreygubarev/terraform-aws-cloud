@@ -23,7 +23,7 @@ output "network_public_ip" {
   description = "AWS Public IP"
 }
 
-output "network_security_group" {
-  value       = data.aws_security_group.this.id
+output "network_security_groups" {
+  value       = [data.aws_security_group.this.id]
   description = "Default AWS Security Group ID"
 }
