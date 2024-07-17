@@ -9,10 +9,14 @@ locals {
   enable_public_ipv4 = local.enable_ipv4 && var.enable_public_ipv4
   enable_public_ipv6 = local.enable_ipv6 && var.enable_public_ipv6
 
-  enable_dhcp  = local.enable_ipv4 || local.enable_ipv6
+  enable_dhcp = local.enable_ipv4 || local.enable_ipv6
+
+  enable_igw  = local.enable_public_subnets
+  enable_nat  = local.enable_ipv4 && local.enable_private_subnets && local.enable_igw
+  enable_eigw = local.enable_ipv6 && local.enable_private_subnets
+
   enable_dns64 = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
   enable_nat64 = local.enable_dns64 && local.enable_private_subnets
-  enable_igw   = local.enable_public_subnets
 }
 
 ################################################################################
@@ -52,7 +56,7 @@ resource "aws_vpc_dhcp_options_association" "this" {
   count = local.enable_dhcp ? 1 : 0
 
   vpc_id          = aws_vpc.this.id
-  dhcp_options_id = aws_vpc_dhcp_options.this.id
+  dhcp_options_id = aws_vpc_dhcp_options.this[0].id
 
   depends_on = [
     aws_vpc.this,
@@ -183,7 +187,7 @@ resource "aws_route" "public_internet_gateway_ipv6" {
 ################################################################################
 
 resource "aws_eip" "this" {
-  for_each = local.enable_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_nat ? toset(data.aws_availability_zones.this.names) : toset([])
 
   domain = "vpc"
 
@@ -197,7 +201,7 @@ resource "aws_eip" "this" {
 }
 
 resource "aws_nat_gateway" "this" {
-  for_each = local.enable_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_nat ? toset(data.aws_availability_zones.this.names) : toset([])
 
   allocation_id = aws_eip.this[each.key].id
   subnet_id     = aws_subnet.public[each.key].id
@@ -214,7 +218,7 @@ resource "aws_nat_gateway" "this" {
 }
 
 resource "aws_egress_only_internet_gateway" "this" {
-  count = local.enable_private_subnets ? 1 : 0
+  count = local.enable_eigw ? 1 : 0
 
   vpc_id = aws_vpc.this.id
 
@@ -275,7 +279,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route" "private_egress_ipv4" {
-  for_each = local.enable_subnets && local.enable_ipv4 ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_nat ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.private[each.key].id
   destination_cidr_block = "0.0.0.0/0"
@@ -283,7 +287,7 @@ resource "aws_route" "private_egress_ipv4" {
 }
 
 resource "aws_route" "private_egress_ipv6" {
-  for_each = local.enable_private_subnets && local.enable_ipv6 ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_eigw ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.private[each.key].id
   destination_ipv6_cidr_block = "::/0"
