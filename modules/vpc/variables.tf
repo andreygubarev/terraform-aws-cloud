@@ -57,3 +57,15 @@ variable "network_private_subnets_enabled" {
   description = "Enable private subnets"
   default     = true
 }
+
+variable "network_public_ipv4_enabled" {
+  type        = bool
+  description = "Enable public IPv4"
+  default     = true
+}
+
+variable "network_public_ipv6_enabled" {
+  type        = bool
+  description = "Enable public IPv6"
+  default     = true
+}

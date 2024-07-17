@@ -73,7 +73,7 @@ resource "aws_subnet" "public" {
 
   # ipv4 public
   enable_resource_name_dns_a_record_on_launch = true
-  map_public_ip_on_launch                     = true
+  map_public_ip_on_launch                     = var.network_public_ipv4_enabled
   cidr_block = cidrsubnet(
     aws_vpc.this.cidr_block,
     local.public_ipv4_netmask,
@@ -82,7 +82,7 @@ resource "aws_subnet" "public" {
 
   # ipv6 public
   enable_resource_name_dns_aaaa_record_on_launch = true
-  assign_ipv6_address_on_creation                = true
+  assign_ipv6_address_on_creation                = var.network_public_ipv6_enabled
   ipv6_cidr_block = cidrsubnet(
     aws_vpc.this.ipv6_cidr_block,
     local.public_ipv6_netmask,
@@ -194,6 +194,8 @@ resource "aws_nat_gateway" "this" {
 }
 
 resource "aws_egress_only_internet_gateway" "this" {
+  count = var.network_private_subnets_enabled ? 1 : 0
+
   vpc_id = aws_vpc.this.id
 
   tags = {
@@ -267,7 +269,7 @@ resource "aws_route" "private_egress_ipv6" {
 
   route_table_id              = aws_route_table.private[each.key].id
   destination_ipv6_cidr_block = "::/0"
-  egress_only_gateway_id      = aws_egress_only_internet_gateway.this.id
+  egress_only_gateway_id      = aws_egress_only_internet_gateway.this[0].id
 }
 
 resource "aws_route" "private_dns64" {
