@@ -65,7 +65,7 @@ resource "aws_vpc_dhcp_options_association" "this" {
 }
 
 ################################################################################
-# AWS VPC | Internet Gateway
+# AWS VPC | Internet Gateway and Egress-only Internet Gateway
 ################################################################################
 
 resource "aws_internet_gateway" "this" {
@@ -74,17 +74,23 @@ resource "aws_internet_gateway" "this" {
   tags = {
     "Name" = "${var.name}"
   }
-
-  depends_on = [
-    aws_route_table_association.public,
-  ]
 }
 
 resource "aws_internet_gateway_attachment" "this" {
   count = local.enable_igw ? 1 : 0
 
-  internet_gateway_id = aws_internet_gateway.this[0].id
   vpc_id              = aws_vpc.this.id
+  internet_gateway_id = aws_internet_gateway.this[0].id
+}
+
+resource "aws_egress_only_internet_gateway" "this" {
+  count = local.enable_eigw ? 1 : 0
+
+  vpc_id = aws_vpc.this.id
+
+  tags = {
+    "Name" = "${var.name}"
+  }
 }
 
 ################################################################################
@@ -163,8 +169,8 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public[each.key].id
 }
 
-resource "aws_route" "public_internet_gateway_ipv4" {
-  for_each = local.enable_igw && local.enable_ipv4 ? toset(data.aws_availability_zones.this.names) : toset([])
+resource "aws_route" "public_ipv4" {
+  for_each = local.enable_public_subnets && local.enable_ipv4 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.public[each.key].id
   destination_cidr_block = "0.0.0.0/0"
@@ -175,8 +181,8 @@ resource "aws_route" "public_internet_gateway_ipv4" {
   ]
 }
 
-resource "aws_route" "public_internet_gateway_ipv6" {
-  for_each = local.enable_igw && local.enable_ipv6 ? toset(data.aws_availability_zones.this.names) : toset([])
+resource "aws_route" "public_ipv6" {
+  for_each = local.enable_public_subnets && local.enable_ipv6 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.public[each.key].id
   destination_ipv6_cidr_block = "::/0"
@@ -188,7 +194,7 @@ resource "aws_route" "public_internet_gateway_ipv6" {
 }
 
 ################################################################################
-# AWS VPC Subnets | NAT Gateway and Egress Only Internet Gateway
+# AWS VPC Subnets | NAT Gateway
 ################################################################################
 
 resource "aws_eip" "this" {
@@ -217,20 +223,11 @@ resource "aws_nat_gateway" "this" {
 
   depends_on = [
     aws_internet_gateway.this,
-    aws_route.public_internet_gateway_ipv4,
-    aws_route.public_internet_gateway_ipv6,
+    aws_route.public_ipv4,
+    aws_route.public_ipv6,
   ]
 }
 
-resource "aws_egress_only_internet_gateway" "this" {
-  count = local.enable_eigw ? 1 : 0
-
-  vpc_id = aws_vpc.this.id
-
-  tags = {
-    "Name" = "${var.name}"
-  }
-}
 ################################################################################
 # AWS VPC Subnets | Private
 ################################################################################
@@ -283,7 +280,7 @@ resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.private[each.key].id
 }
 
-resource "aws_route" "private_egress_ipv4" {
+resource "aws_route" "private_ipv4" {
   for_each = local.enable_nat ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.private[each.key].id
@@ -291,7 +288,7 @@ resource "aws_route" "private_egress_ipv4" {
   nat_gateway_id         = aws_nat_gateway.this[each.key].id
 }
 
-resource "aws_route" "private_egress_ipv6" {
+resource "aws_route" "private_ipv6" {
   for_each = local.enable_eigw ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.private[each.key].id
