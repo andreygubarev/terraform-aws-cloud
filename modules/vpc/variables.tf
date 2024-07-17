@@ -52,13 +52,13 @@ variable "network_cidr_ipv6" {
   default     = true
 }
 
-variable "network_public_subnets_enabled" {
+variable "network_enable_public_subnets" {
   type        = bool
   description = "Enable public subnets"
   default     = true
 }
 
-variable "network_private_subnets_enabled" {
+variable "network_enable_private_subnets" {
   type        = bool
   description = "Enable private subnets"
   default     = true
