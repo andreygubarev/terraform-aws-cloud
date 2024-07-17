@@ -5,8 +5,6 @@ Terraform module to create a VPC with public and private subnets across multiple
 - Public subnets with Internet Gateway
 - Private subnets with NAT Gateway with Elastic IP
 - Default Security Group
-- Default IAM Instance Profile with AWS SSM and AWS ECR read-only access
-- Default Key Pair
 
 Network CIDR block is divided into subnets with the following rules:
 - Public subnets have *1024* addresses and created in the first part of the CIDR block (`x.x.0.0` - `x.x.31.255`)

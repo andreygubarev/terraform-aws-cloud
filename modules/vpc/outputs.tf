@@ -27,19 +27,3 @@ output "network_security_group" {
   value       = data.aws_security_group.this.id
   description = "Default AWS Security Group ID"
 }
-
-output "instance_profile" {
-  value       = aws_iam_instance_profile.this.name
-  description = "AWS Instance Profile Name"
-}
-
-output "instance_keypair" {
-  value       = aws_key_pair.this.key_name
-  description = "AWS Key Pair Name"
-}
-
-output "instance_keypair_privkey" {
-  value       = tls_private_key.this.private_key_openssh
-  description = "AWS Key Pair Private Key"
-  sensitive   = true
-}

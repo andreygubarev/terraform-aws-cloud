@@ -1,23 +1,4 @@
 ################################################################################
-# Name
-################################################################################
-
-resource "random_string" "this" {
-  length = 4
-
-  # only lower case letters
-  special = false
-  upper   = false
-  lower   = true
-  numeric = false
-}
-
-locals {
-  name        = var.name
-  name_unique = "${local.name}-${random_string.this.result}"
-}
-
-################################################################################
 # AWS VPC
 ################################################################################
 
@@ -31,7 +12,7 @@ resource "aws_vpc" "this" {
   assign_generated_ipv6_cidr_block = true
 
   tags = {
-    Name = local.name
+    Name = var.name
   }
 }
 
@@ -45,7 +26,7 @@ resource "aws_vpc_dhcp_options" "this" {
   ntp_servers         = ["169.254.169.123"]
 
   tags = {
-    Name = local.name
+    Name = var.name
   }
 }
 
@@ -111,7 +92,7 @@ resource "aws_subnet" "public" {
   enable_dns64 = false
 
   tags = {
-    "Name" = "${local.name}-public-${local.availability_zones[each.key]}"
+    "Name" = "${var.name}-public-${local.availability_zones[each.key]}"
 
     "kubernetes.io/role/elb" = "1"
   }
@@ -123,7 +104,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   tags = {
-    "Name" = "${local.name}-public-${local.availability_zones[each.key]}"
+    "Name" = "${var.name}-public-${local.availability_zones[each.key]}"
   }
 }
 
@@ -136,7 +117,7 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_internet_gateway" "public" {
   tags = {
-    "Name" = "${local.name}"
+    "Name" = "${var.name}"
   }
 
   depends_on = [
@@ -183,7 +164,7 @@ resource "aws_eip" "this" {
   domain = "vpc"
 
   tags = {
-    "Name" = "${local.name}-${local.availability_zones[each.key]}"
+    "Name" = "${var.name}-${local.availability_zones[each.key]}"
   }
   depends_on = [
     aws_vpc.this,
@@ -198,7 +179,7 @@ resource "aws_nat_gateway" "this" {
   subnet_id     = aws_subnet.public[each.key].id
 
   tags = {
-    "Name" = "${local.name}-${local.availability_zones[each.key]}"
+    "Name" = "${var.name}-${local.availability_zones[each.key]}"
   }
 
   depends_on = [
@@ -212,7 +193,7 @@ resource "aws_egress_only_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
   tags = {
-    "Name" = "${local.name}"
+    "Name" = "${var.name}"
   }
 }
 ################################################################################
@@ -246,7 +227,7 @@ resource "aws_subnet" "private" {
   enable_dns64 = true
 
   tags = {
-    "Name" = "${local.name}-private-${local.availability_zones[each.key]}"
+    "Name" = "${var.name}-private-${local.availability_zones[each.key]}"
 
     "kubernetes.io/role/internal-elb" = "1"
   }
@@ -258,7 +239,7 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
   tags = {
-    "Name" = "${local.name}-private-${local.availability_zones[each.key]}"
+    "Name" = "${var.name}-private-${local.availability_zones[each.key]}"
   }
 }
 
@@ -307,7 +288,7 @@ resource "aws_vpc_endpoint" "s3" {
   )
 
   tags = {
-    "Name" = "${local.name}-s3"
+    "Name" = "${var.name}-s3"
   }
 
   depends_on = [
@@ -315,55 +296,4 @@ resource "aws_vpc_endpoint" "s3" {
     aws_route_table.public,
     aws_route_table.private,
   ]
-}
-
-###############################################################################
-# AWS IAM Instance Profile
-###############################################################################
-
-resource "aws_iam_role" "this" {
-  name = local.name_unique
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action    = "sts:AssumeRole"
-        Effect    = "Allow"
-        Principal = { Service = "ec2.amazonaws.com" }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_instance_profile" "this" {
-  name = local.name_unique
-  role = aws_iam_role.this.name
-}
-
-resource "aws_iam_role_policy_attachment" "amazon_ssm_managed_instance_core" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-  role       = aws_iam_role.this.name
-}
-
-resource "aws_iam_role_policy_attachment" "cloudwatch_agent_server" {
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-  role       = aws_iam_role.this.name
-}
-
-resource "aws_iam_role_policy_attachment" "amazon_ec2_container_registry_readonly" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.this.name
-}
-
-################################################################################
-# AWS EC2 Keypair
-################################################################################
-
-resource "tls_private_key" "this" {
-  algorithm = "ED25519"
-}
-
-resource "aws_key_pair" "this" {
-  key_name   = local.name_unique
-  public_key = tls_private_key.this.public_key_openssh
 }
