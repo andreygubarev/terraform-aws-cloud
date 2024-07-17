@@ -294,7 +294,27 @@ resource "aws_vpc_endpoint" "s3" {
   )
 
   tags = {
-    "Name" = "${var.name}-s3"
+    "Name" = "${var.name}-vpce-s3"
+  }
+
+  depends_on = [
+    aws_vpc.this,
+    aws_route_table.public,
+    aws_route_table.private,
+  ]
+}
+
+resource "aws_vpc_endpoint" "dynamodb" {
+  vpc_id = aws_vpc.this.id
+
+  service_name = "com.amazonaws.${data.aws_region.this.name}.dynamodb"
+  route_table_ids = concat(
+    [for rt in aws_route_table.public : rt.id],
+    [for rt in aws_route_table.private : rt.id],
+  )
+
+  tags = {
+    "Name" = "${var.name}-vpce-dynamodb"
   }
 
   depends_on = [
