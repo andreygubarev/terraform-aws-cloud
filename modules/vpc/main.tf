@@ -4,11 +4,13 @@ locals {
 
   enable_public_subnets  = var.enable_public_subnets
   enable_private_subnets = var.enable_private_subnets
+  enable_subnets         = local.enable_public_subnets && local.enable_private_subnets
 
   enable_public_ipv4 = local.enable_ipv4 && var.enable_public_ipv4
   enable_public_ipv6 = local.enable_ipv6 && var.enable_public_ipv6
 
-  ipv6_only = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
+  enable_dns64 = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
+  enable_nat64 = local.enable_dns64 && local.enable_private_subnets
 }
 
 ################################################################################
@@ -101,7 +103,7 @@ resource "aws_subnet" "public" {
     local.public_ipv6_netnum + index(data.aws_availability_zones.available.names, each.key)
   ) : null
 
-  enable_dns64 = local.ipv6_only # TODO: add support for IPv6 only VPC
+  enable_dns64 = local.enable_dns64 # TODO: add support for IPv6 only VPC
 
   tags = {
     "Name" = "${var.name}-public-${local.availability_zones[each.key]}"
@@ -267,7 +269,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route" "private_egress_ipv4" {
-  for_each = local.enable_ipv4 && local.enable_public_subnets && local.enable_private_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_ipv4 && local.enable_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.private[each.key].id
   destination_cidr_block = "0.0.0.0/0"
@@ -282,8 +284,8 @@ resource "aws_route" "private_egress_ipv6" {
   egress_only_gateway_id      = aws_egress_only_internet_gateway.this[0].id
 }
 
-resource "aws_route" "private_dns64" {
-  for_each = local.ipv6_only && local.enable_private_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+resource "aws_route" "private_nat64" {
+  for_each = local.enable_nat64 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.private[each.key].id
   destination_ipv6_cidr_block = "64:ff9b::/96"
