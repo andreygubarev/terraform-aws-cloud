@@ -1,4 +1,4 @@
-# `andreygubarev/aws-ec2-instance`
+# `andreygubarev/cloud/aws//modules/ec2-instance`
 
 Terraform module to create an EC2 instance in AWS.
 
@@ -6,8 +6,8 @@ Terraform module to create an EC2 instance in AWS.
 
 ```hcl
 module "ec2_instance" {
-  source  = "andreygubarev/ec2-instance/aws"
-  version = "0.1.6"
+  source  = "andreygubarev/cloud/aws//modules/ec2-instance"
+  version = ""
 
   name = var.name
 

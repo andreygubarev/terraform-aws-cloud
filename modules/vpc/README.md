@@ -1,4 +1,4 @@
-# `andreygubarev/aws-vpc`
+# `andreygubarev/cloud/aws//vpc`
 
 Terraform module to create a VPC with public and private subnets across multiple availability zones. Module creates the following resources:
 - AWS VPC with IPv6 support
