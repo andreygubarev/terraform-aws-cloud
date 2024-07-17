@@ -261,7 +261,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route" "private_egress_ipv4" {
-  for_each = local.enable_ipv4 && var.network_private_subnets_enabled ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_ipv4 && var.network_public_subnets_enabled && var.network_private_subnets_enabled ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.private[each.key].id
   destination_cidr_block = "0.0.0.0/0"
