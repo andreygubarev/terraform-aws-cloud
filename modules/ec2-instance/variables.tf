@@ -17,6 +17,11 @@ variable "name" {
 # Network
 ################################################################################
 
+variable "network_vpc" {
+  type        = string
+  description = "AWS VPC ID"
+}
+
 variable "network_subnet" {
   type        = string
   description = "AWS Subnet ID"
@@ -37,19 +42,8 @@ variable "instance_type" {
 }
 
 variable "instance_ami" {
-  type        = string
-  description = "EC2 instance image ID"
-}
-
-variable "instance_ami_owner" {
-  type        = string
-  description = "EC2 instance image owner"
-}
-
-variable "instance_userdata" {
-  type        = string
-  description = "EC2 instance user data"
-  default     = "User data"
+  type        = map(string)
+  description = "EC2 instance image ID (filter)"
 }
 
 variable "instance_profile" {
@@ -60,6 +54,12 @@ variable "instance_profile" {
 variable "instance_keypair" {
   type        = string
   description = "EC2 instance keypair"
+}
+
+variable "instance_userdata" {
+  type        = string
+  description = "EC2 instance user data"
+  default     = ""
 }
 
 ################################################################################
