@@ -9,7 +9,7 @@ locals {
   enable_public_ipv4 = local.enable_ipv4 && var.enable_public_ipv4
   enable_public_ipv6 = local.enable_ipv6 && var.enable_public_ipv6
 
-  enable_dhcp = local.enable_ipv4 || local.enable_ipv6
+  enable_dopt = local.enable_ipv4 || local.enable_ipv6
 
   enable_igw  = local.enable_public_subnets
   enable_nat  = local.enable_ipv4 && local.enable_private_subnets && local.enable_igw
@@ -42,7 +42,7 @@ resource "aws_vpc" "this" {
 ################################################################################
 
 resource "aws_vpc_dhcp_options" "this" {
-  count = local.enable_dhcp ? 1 : 0
+  count = local.enable_dopt ? 1 : 0
 
   domain_name         = "ec2.internal"
   domain_name_servers = ["AmazonProvidedDNS"]
@@ -54,7 +54,7 @@ resource "aws_vpc_dhcp_options" "this" {
 }
 
 resource "aws_vpc_dhcp_options_association" "this" {
-  count = local.enable_dhcp ? 1 : 0
+  count = local.enable_dopt ? 1 : 0
 
   vpc_id          = aws_vpc.this.id
   dhcp_options_id = aws_vpc_dhcp_options.this[0].id
