@@ -16,8 +16,8 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = data.aws_security_groups.this.ids
 
   private_dns_name_options {
-    enable_resource_name_dns_aaaa_record = true
-    enable_resource_name_dns_a_record    = true
+    enable_resource_name_dns_aaaa_record = data.aws_subnet.this.enable_resource_name_dns_aaaa_record_on_launch
+    enable_resource_name_dns_a_record    = data.aws_subnet.this.enable_resource_name_dns_a_record_on_launch
     hostname_type                        = "resource-name"
   }
 
