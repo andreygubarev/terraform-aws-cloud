@@ -12,12 +12,14 @@ locals {
   enable_dopt = local.enable_ipv4 || local.enable_ipv6
 
   enable_igw  = local.enable_public_subnets
-  enable_nat  = local.enable_ipv4 && local.enable_private_subnets && local.enable_igw
-  enable_eigw = local.enable_ipv6 && local.enable_private_subnets
+  enable_eigw = local.enable_private_subnets && local.enable_ipv6
   enable_vpce = true
 
-  enable_dns64 = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
-  enable_nat64 = local.enable_dns64 && local.enable_private_subnets
+  enable_nat = (local.enable_igw || local.enable_eigw) && ((local.enable_private_subnets && local.enable_ipv4) || local.enable_nat64)
+
+  enable_dns64 = local.enable_ipv6 && (local.enable_ipv4 == false)
+  enable_nat64 = local.enable_nat && local.enable_dns64
+
 }
 
 ################################################################################
@@ -193,6 +195,14 @@ resource "aws_route" "public_ipv6" {
   ]
 }
 
+resource "aws_route" "public_nat64" {
+  for_each = local.enable_public_subnets && local.enable_nat64 ? toset(data.aws_availability_zones.this.names) : toset([])
+
+  route_table_id              = aws_route_table.public[each.key].id
+  destination_ipv6_cidr_block = "64:ff9b::/96"
+  nat_gateway_id              = aws_nat_gateway.this[each.key].id
+}
+
 ################################################################################
 # AWS VPC Subnets | NAT Gateway
 ################################################################################
@@ -256,6 +266,8 @@ resource "aws_subnet" "private" {
     local.private_ipv6_netnum + index(data.aws_availability_zones.available.names, each.key)
   ) : null
 
+  enable_dns64 = local.enable_dns64 # TODO: add support for IPv6 only VPC
+
   tags = {
     "Name" = "${var.name}-private-${local.availability_zones[each.key]}"
 
@@ -281,7 +293,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route" "private_ipv4" {
-  for_each = local.enable_nat ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_private_subnets && local.enable_nat ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.private[each.key].id
   destination_cidr_block = "0.0.0.0/0"
@@ -289,7 +301,7 @@ resource "aws_route" "private_ipv4" {
 }
 
 resource "aws_route" "private_ipv6" {
-  for_each = local.enable_eigw ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_private_subnets && local.enable_eigw ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.private[each.key].id
   destination_ipv6_cidr_block = "::/0"
@@ -297,7 +309,7 @@ resource "aws_route" "private_ipv6" {
 }
 
 resource "aws_route" "private_nat64" {
-  for_each = local.enable_nat64 ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_private_subnets && local.enable_nat64 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.private[each.key].id
   destination_ipv6_cidr_block = "64:ff9b::/96"
