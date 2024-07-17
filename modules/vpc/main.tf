@@ -13,7 +13,7 @@ locals {
 
   enable_igw  = local.enable_public_subnets
   enable_eigw = local.enable_private_subnets && local.enable_ipv6
-  enable_nat  = local.enable_igw && (local.enable_private_subnets && local.enable_ipv4)
+  enable_nat  = local.enable_private_subnets && local.enable_ipv4 && local.enable_igw
   enable_vpce = true
 }
 
