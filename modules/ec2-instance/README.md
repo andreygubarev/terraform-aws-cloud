@@ -5,22 +5,29 @@ Terraform module to create an EC2 instance in AWS.
 ## Usage
 
 ```hcl
-module "ec2_instance" {
+module "instance" {
   source  = "andreygubarev/cloud/aws//modules/ec2-instance"
-  version = ""
+  version = "~> 0.4"
 
   name = var.name
 
+  network_vpc             = var.network_vpc
   network_subnet          = var.network_subnet
   network_security_groups = var.network_security_groups
 
-  instance_type      = var.instance_type
-  instance_ami       = var.instance_ami
-  instance_ami_owner = var.instance_ami_owner
+  instance_type    = var.instance_type
+  instance_ami     = var.instance_ami
+  instance_keypair = var.instance_keypair
+  instance_profile = var.instance_profile
 
-  instance_keypair        = var.instance_keypair
-  instance_profile        = var.instance_profile
-  instance_cloudinit      = file("${path.module}/files/cloud-config.yml")
-  instance_cloudinit_type = "text/cloud-config"
+  volume_type = "gp3" # optional
+  volume_size = 8     # optional
+
+  volume_devices = {  # optional
+    "/dev/xvdb1" = {
+      volume_type = "gp3"
+      volume_size = 8
+    }
+  }
 }
 ```
