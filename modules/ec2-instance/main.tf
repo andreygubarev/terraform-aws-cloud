@@ -22,8 +22,8 @@ resource "aws_instance" "this" {
   }
 
   root_block_device {
-    volume_size = var.volume_size
     volume_type = var.volume_type
+    volume_size = var.volume_size
     encrypted   = true
 
     tags = {
@@ -40,4 +40,29 @@ resource "aws_instance" "this" {
       vpc_security_group_ids,
     ]
   }
+}
+
+################################################################################
+# AWS EBS Volume
+################################################################################
+
+resource "aws_ebs_volume" "this" {
+  for_each = var.volume_devices
+
+  availability_zone = data.aws_subnet.this.availability_zone
+  type              = each.value.volume_type
+  size              = each.value.volume_size
+  encrypted         = true
+
+  tags = {
+    Name = var.name
+  }
+}
+
+resource "aws_volume_attachment" "this" {
+  for_each = var.volume_devices
+
+  instance_id = aws_instance.this.id
+  volume_id   = aws_ebs_volume.this[each.key].id
+  device_name = each.key
 }

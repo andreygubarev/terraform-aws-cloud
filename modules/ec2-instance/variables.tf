@@ -68,12 +68,22 @@ variable "instance_userdata" {
 
 variable "volume_type" {
   type        = string
-  description = "EC2 volume type"
+  description = "EC2 instance root volume type"
   default     = "gp3"
 }
 
 variable "volume_size" {
   type        = string
-  description = "EC2 volume size"
-  default     = 32
+  description = "EC2 instance root volume size"
+  default     = 8
+}
+
+variable "volume_devices" {
+  type = map(object({
+    volume_type = string
+    volume_size = string
+  }))
+
+  description = "EC2 instance additional EBS volumes"
+  default     = {}
 }
