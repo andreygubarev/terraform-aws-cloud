@@ -5,6 +5,9 @@ locals {
   enable_public_subnets  = var.enable_public_subnets
   enable_private_subnets = var.enable_private_subnets
 
+  enable_public_ipv4 = local.enable_ipv4 && var.network_public_ipv4_enabled
+  enable_public_ipv6 = local.enable_ipv6 && var.network_public_ipv6_enabled
+
   ipv6_only = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
 }
 
@@ -82,7 +85,7 @@ resource "aws_subnet" "public" {
 
   # ipv4 public
   enable_resource_name_dns_a_record_on_launch = local.enable_ipv4
-  map_public_ip_on_launch                     = local.enable_ipv4 && var.network_public_ipv4_enabled
+  map_public_ip_on_launch                     = local.enable_public_ipv4
   cidr_block = local.enable_ipv4 ? cidrsubnet(
     aws_vpc.this.cidr_block,
     local.public_ipv4_netmask,
@@ -91,7 +94,7 @@ resource "aws_subnet" "public" {
 
   # ipv6 public
   enable_resource_name_dns_aaaa_record_on_launch = local.enable_ipv6
-  assign_ipv6_address_on_creation                = local.enable_ipv6 && var.network_public_ipv6_enabled
+  assign_ipv6_address_on_creation                = local.enable_public_ipv6
   ipv6_cidr_block = local.enable_ipv6 ? cidrsubnet(
     aws_vpc.this.ipv6_cidr_block,
     local.public_ipv6_netmask,
@@ -232,7 +235,7 @@ resource "aws_subnet" "private" {
 
   # ipv6 private
   enable_resource_name_dns_aaaa_record_on_launch = local.enable_ipv6
-  assign_ipv6_address_on_creation                = local.enable_ipv6 && var.network_public_ipv6_enabled
+  assign_ipv6_address_on_creation                = local.enable_public_ipv6
   ipv6_cidr_block = local.enable_ipv6 ? cidrsubnet(
     aws_vpc.this.ipv6_cidr_block,
     local.private_ipv6_netmask,
