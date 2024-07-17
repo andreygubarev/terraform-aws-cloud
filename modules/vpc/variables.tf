@@ -45,3 +45,15 @@ variable "network_cidr" {
     error_message = "network_cidr must be a /16 CIDR block"
   }
 }
+
+variable "network_public_subnets_enabled" {
+  type        = bool
+  description = "Enable public subnets"
+  default     = true
+}
+
+variable "network_private_subnets_enabled" {
+  type        = bool
+  description = "Enable private subnets"
+  default     = true
+}
