@@ -12,9 +12,9 @@ locals {
   enable_dopt = local.enable_ipv4 || local.enable_ipv6
 
   enable_igw  = local.enable_public_subnets
-  enable_eigw = local.enable_ipv6 && local.enable_private_subnets
+  enable_eigw = local.enable_private_subnets && local.enable_ipv6
+  enable_nat  = local.enable_igw && (local.enable_private_subnets && local.enable_ipv4)
   enable_vpce = true
-  enable_nat  = local.enable_igw && (local.enable_ipv4 && local.enable_private_subnets)
 }
 
 ################################################################################
