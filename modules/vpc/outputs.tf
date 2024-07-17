@@ -19,7 +19,7 @@ output "network_private_subnets" {
 }
 
 output "network_public_ips" {
-  value       = local.enable_public_subnets && local.enable_private_subnets ? [for subnet in sort(data.aws_availability_zones.this.names) : aws_eip.this[subnet].public_ip] : []
+  value       = local.enable_subnets ? [for subnet in sort(data.aws_availability_zones.this.names) : aws_eip.this[subnet].public_ip] : []
   description = "AWS Public IP"
 }
 

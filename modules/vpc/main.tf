@@ -149,7 +149,7 @@ resource "aws_internet_gateway_attachment" "public" {
 }
 
 resource "aws_route" "public_internet_gateway_ipv4" {
-  for_each = local.enable_ipv4 && local.enable_public_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_public_subnets && local.enable_ipv4 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.public[each.key].id
   destination_cidr_block = "0.0.0.0/0"
@@ -161,7 +161,7 @@ resource "aws_route" "public_internet_gateway_ipv4" {
 }
 
 resource "aws_route" "public_internet_gateway_ipv6" {
-  for_each = local.enable_ipv6 && local.enable_public_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_public_subnets && local.enable_ipv6 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.public[each.key].id
   destination_ipv6_cidr_block = "::/0"
@@ -177,7 +177,7 @@ resource "aws_route" "public_internet_gateway_ipv6" {
 ################################################################################
 
 resource "aws_eip" "this" {
-  for_each = local.enable_private_subnets && local.enable_public_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
 
   domain = "vpc"
 
@@ -191,7 +191,7 @@ resource "aws_eip" "this" {
 }
 
 resource "aws_nat_gateway" "this" {
-  for_each = local.enable_private_subnets && local.enable_public_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
 
   allocation_id = aws_eip.this[each.key].id
   subnet_id     = aws_subnet.public[each.key].id
@@ -269,7 +269,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route" "private_egress_ipv4" {
-  for_each = local.enable_ipv4 && local.enable_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_subnets && local.enable_ipv4 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.private[each.key].id
   destination_cidr_block = "0.0.0.0/0"
@@ -277,7 +277,7 @@ resource "aws_route" "private_egress_ipv4" {
 }
 
 resource "aws_route" "private_egress_ipv6" {
-  for_each = local.enable_ipv6 && local.enable_private_subnets ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_private_subnets && local.enable_ipv6 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.private[each.key].id
   destination_ipv6_cidr_block = "::/0"
