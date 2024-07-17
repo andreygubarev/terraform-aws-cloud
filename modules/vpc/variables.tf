@@ -64,13 +64,13 @@ variable "enable_private_subnets" {
   default     = true
 }
 
-variable "network_public_ipv4_enabled" {
+variable "enable_public_ipv4" {
   type        = bool
   description = "Enable public IPv4"
   default     = true
 }
 
-variable "network_public_ipv6_enabled" {
+variable "enable_public_ipv6" {
   type        = bool
   description = "Enable public IPv6"
   default     = true

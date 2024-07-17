@@ -5,8 +5,8 @@ locals {
   enable_public_subnets  = var.enable_public_subnets
   enable_private_subnets = var.enable_private_subnets
 
-  enable_public_ipv4 = local.enable_ipv4 && var.network_public_ipv4_enabled
-  enable_public_ipv6 = local.enable_ipv6 && var.network_public_ipv6_enabled
+  enable_public_ipv4 = local.enable_ipv4 && var.enable_public_ipv4
+  enable_public_ipv6 = local.enable_ipv6 && var.enable_public_ipv6
 
   ipv6_only = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
 }
