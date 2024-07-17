@@ -26,3 +26,10 @@ module "vpc" {
   network_cidr = "172.17.0.0/16"
 }
 ```
+
+
+Notes:
+
+DNS64 and NAT64 requires NAT Gateway in public subnet, NAT Gateway requires Internet Gateway.
+
+https://docs.aws.amazon.com/vpc/latest/userguide/nat-gateway-nat64-dns64.html#nat-gateway-nat64-dns64-walkthrough
