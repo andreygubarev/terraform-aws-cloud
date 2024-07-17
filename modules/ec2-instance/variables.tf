@@ -22,44 +22,58 @@ variable "network_vpc" {
   description = "AWS VPC ID"
 }
 
-variable "network_subnet" {
-  type        = string
+variable "network_subnets" {
+  type        = list(string)
   description = "AWS Subnet ID"
 }
 
 variable "network_security_groups" {
   type        = list(string)
   description = "AWS Security Group IDs"
+  default     = []
 }
 
 ################################################################################
 # Instance
 ################################################################################
 
+variable "instance_launch_template" {
+  type = object({
+    id      = string
+    version = string
+  })
+  description = "EC2 instance launch template"
+  default     = null
+}
+
 variable "instance_type" {
   type        = string
   description = "EC2 instance type"
+  default     = null
 }
 
 variable "instance_ami" {
-  type        = map(string)
-  description = "EC2 instance image ID (filter)"
+  type        = string
+  description = "EC2 instance image ID"
+  default     = null
 }
 
 variable "instance_profile" {
   type        = string
   description = "EC2 instance profile"
+  default     = null
 }
 
 variable "instance_keypair" {
   type        = string
   description = "EC2 instance keypair"
+  default     = null
 }
 
 variable "instance_userdata" {
   type        = string
   description = "EC2 instance user data"
-  default     = ""
+  default     = null
 }
 
 ################################################################################
@@ -69,13 +83,13 @@ variable "instance_userdata" {
 variable "volume_type" {
   type        = string
   description = "EC2 instance root volume type"
-  default     = "gp3"
+  default     = null
 }
 
 variable "volume_size" {
   type        = string
   description = "EC2 instance root volume size"
-  default     = 8
+  default     = null
 }
 
 variable "volume_devices" {

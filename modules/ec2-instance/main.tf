@@ -3,12 +3,20 @@
 ################################################################################
 
 resource "aws_instance" "this" {
-  instance_type = data.aws_ec2_instance_type.this.instance_type
-  ami           = data.aws_ami.this.id
+  dynamic "launch_template" {
+    for_each = var.instance_launch_template != null ? [var.instance_launch_template] : []
+    content {
+      id      = launch_template.value.id
+      version = launch_template.value.version
+    }
+  }
 
-  key_name             = data.aws_key_pair.this.key_name
-  iam_instance_profile = data.aws_iam_instance_profile.this.name
-  user_data_base64     = base64encode(var.instance_userdata)
+  instance_type = var.instance_type
+  ami           = var.instance_ami
+
+  key_name             = var.instance_keypair
+  iam_instance_profile = var.instance_profile
+  user_data_base64     = var.instance_userdata != null ? base64encode(var.instance_userdata) : null
 
   monitoring = true
 
