@@ -14,6 +14,7 @@ locals {
   enable_igw  = local.enable_public_subnets
   enable_nat  = local.enable_ipv4 && local.enable_private_subnets && local.enable_igw
   enable_eigw = local.enable_ipv6 && local.enable_private_subnets
+  enable_vpce = true
 
   enable_dns64 = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
   enable_nat64 = local.enable_dns64 && local.enable_private_subnets
@@ -61,6 +62,29 @@ resource "aws_vpc_dhcp_options_association" "this" {
   depends_on = [
     aws_vpc.this,
   ]
+}
+
+################################################################################
+# AWS VPC | Internet Gateway
+################################################################################
+
+resource "aws_internet_gateway" "this" {
+  count = local.enable_igw ? 1 : 0
+
+  tags = {
+    "Name" = "${var.name}"
+  }
+
+  depends_on = [
+    aws_route_table_association.public,
+  ]
+}
+
+resource "aws_internet_gateway_attachment" "this" {
+  count = local.enable_igw ? 1 : 0
+
+  internet_gateway_id = aws_internet_gateway.this[0].id
+  vpc_id              = aws_vpc.this.id
 }
 
 ################################################################################
@@ -139,31 +163,12 @@ resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public[each.key].id
 }
 
-resource "aws_internet_gateway" "public" {
-  count = local.enable_igw ? 1 : 0
-
-  tags = {
-    "Name" = "${var.name}"
-  }
-
-  depends_on = [
-    aws_route_table_association.public,
-  ]
-}
-
-resource "aws_internet_gateway_attachment" "public" {
-  count = local.enable_igw ? 1 : 0
-
-  internet_gateway_id = aws_internet_gateway.public[0].id
-  vpc_id              = aws_vpc.this.id
-}
-
 resource "aws_route" "public_internet_gateway_ipv4" {
   for_each = local.enable_igw && local.enable_ipv4 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.public[each.key].id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.public[0].id
+  gateway_id             = aws_internet_gateway.this[0].id
 
   depends_on = [
     aws_route_table_association.public,
@@ -175,7 +180,7 @@ resource "aws_route" "public_internet_gateway_ipv6" {
 
   route_table_id              = aws_route_table.public[each.key].id
   destination_ipv6_cidr_block = "::/0"
-  gateway_id                  = aws_internet_gateway.public[0].id
+  gateway_id                  = aws_internet_gateway.this[0].id
 
   depends_on = [
     aws_route_table_association.public,
@@ -196,7 +201,7 @@ resource "aws_eip" "this" {
   }
   depends_on = [
     aws_vpc.this,
-    aws_internet_gateway.public,
+    aws_internet_gateway.this,
   ]
 }
 
@@ -211,7 +216,7 @@ resource "aws_nat_gateway" "this" {
   }
 
   depends_on = [
-    aws_internet_gateway.public,
+    aws_internet_gateway.this,
     aws_route.public_internet_gateway_ipv4,
     aws_route.public_internet_gateway_ipv6,
   ]
@@ -307,6 +312,8 @@ resource "aws_route" "private_nat64" {
 ################################################################################
 
 resource "aws_vpc_endpoint" "s3" {
+  count = local.enable_vpce ? 1 : 0
+
   vpc_id = aws_vpc.this.id
 
   service_name = "com.amazonaws.${data.aws_region.this.name}.s3"
@@ -327,6 +334,8 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 resource "aws_vpc_endpoint" "dynamodb" {
+  count = local.enable_vpce ? 1 : 0
+
   vpc_id = aws_vpc.this.id
 
   service_name = "com.amazonaws.${data.aws_region.this.name}.dynamodb"
