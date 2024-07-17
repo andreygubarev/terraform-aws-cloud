@@ -26,24 +26,30 @@ locals {
   network_availability_zones = sort(var.network_availability_zones)
 }
 
-variable "network_cidr" {
+variable "network_cidr_ipv4" {
   type        = string
-  description = "CIDR block for the VPC"
+  description = "Enable IPv4 CIDR block for the VPC"
 
   validation {
-    condition     = can(cidrnetmask(var.network_cidr))
+    condition     = can(cidrnetmask(var.network_cidr_ipv4))
     error_message = "network_cidr must be a valid CIDR block"
   }
 
   validation {
-    condition     = can(regex("^(10|172|192\\.)", var.network_cidr))
+    condition     = can(regex("^(10|172|192\\.)", var.network_cidr_ipv4))
     error_message = "network_cidr must be a private CIDR block"
   }
 
   validation {
-    condition     = can(regex("/16$", var.network_cidr))
+    condition     = can(regex("/16$", var.network_cidr_ipv4))
     error_message = "network_cidr must be a /16 CIDR block"
   }
+}
+
+variable "network_cidr_ipv6" {
+  type        = bool
+  description = "Enable IPv6 CIDR block for the VPC (auto-generated)"
+  default     = true
 }
 
 variable "network_public_subnets_enabled" {
