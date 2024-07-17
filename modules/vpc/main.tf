@@ -2,8 +2,8 @@ locals {
   enable_ipv4 = true # TODO: add support for IPv6 only VPC
   enable_ipv6 = var.network_cidr_ipv6
 
-  enable_public_subnets  = var.network_enable_public_subnets
-  enable_private_subnets = var.network_enable_private_subnets
+  enable_public_subnets  = var.enable_public_subnets
+  enable_private_subnets = var.enable_private_subnets
 
   ipv6_only = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
 }
