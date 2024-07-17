@@ -12,7 +12,7 @@ locals {
   enable_dhcp  = local.enable_ipv4 || local.enable_ipv6
   enable_dns64 = (local.enable_ipv4 == false) && (local.enable_ipv6 == true)
   enable_nat64 = local.enable_dns64 && local.enable_private_subnets
-
+  enable_igw   = local.enable_public_subnets
 }
 
 ################################################################################
@@ -136,7 +136,7 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_internet_gateway" "public" {
-  count = local.enable_public_subnets ? 1 : 0
+  count = local.enable_igw ? 1 : 0
 
   tags = {
     "Name" = "${var.name}"
@@ -148,14 +148,14 @@ resource "aws_internet_gateway" "public" {
 }
 
 resource "aws_internet_gateway_attachment" "public" {
-  count = local.enable_public_subnets ? 1 : 0
+  count = local.enable_igw ? 1 : 0
 
   internet_gateway_id = aws_internet_gateway.public[0].id
   vpc_id              = aws_vpc.this.id
 }
 
 resource "aws_route" "public_internet_gateway_ipv4" {
-  for_each = local.enable_public_subnets && local.enable_ipv4 ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_igw && local.enable_ipv4 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id         = aws_route_table.public[each.key].id
   destination_cidr_block = "0.0.0.0/0"
@@ -167,7 +167,7 @@ resource "aws_route" "public_internet_gateway_ipv4" {
 }
 
 resource "aws_route" "public_internet_gateway_ipv6" {
-  for_each = local.enable_public_subnets && local.enable_ipv6 ? toset(data.aws_availability_zones.this.names) : toset([])
+  for_each = local.enable_igw && local.enable_ipv6 ? toset(data.aws_availability_zones.this.names) : toset([])
 
   route_table_id              = aws_route_table.public[each.key].id
   destination_ipv6_cidr_block = "::/0"
