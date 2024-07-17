@@ -1,4 +1,4 @@
-# `andreygubarev/cloud/aws//modules/ec2-instance`
+# `andreygubarev/cloud/aws//ec2-instance`
 
 Terraform module to create an EC2 instance in AWS.
 
@@ -18,9 +18,8 @@ module "ec2_instance" {
   instance_ami       = var.instance_ami
   instance_ami_owner = var.instance_ami_owner
 
-  instance_keypair = var.instance_keypair
-  instance_profile = var.instance_profile
-
+  instance_keypair        = var.instance_keypair
+  instance_profile        = var.instance_profile
   instance_cloudinit      = file("${path.module}/files/cloud-config.yml")
   instance_cloudinit_type = "text/cloud-config"
 }
