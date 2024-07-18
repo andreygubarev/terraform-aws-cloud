@@ -25,6 +25,10 @@ variable "network_vpc" {
 variable "network_subnets" {
   type        = list(string)
   description = "AWS Subnet ID"
+  validation {
+    condition     = length(var.network_subnets) == 1
+    error_message = "only one subnet is supported"
+  }
 }
 
 variable "network_security_groups" {
