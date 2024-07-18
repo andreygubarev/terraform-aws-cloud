@@ -15,15 +15,18 @@ Network CIDR block is divided into subnets with the following rules:
 
 ```hcl
 module "vpc" {
-  source  = "andreygubarev/vpc/aws"
+  source  = "andreygubarev/cloud/aws//modules/vps"
 
   name = "vpc"
 
-  network_region = "us-east-1"
-  network_availability_zones = [
-    "us-east-1f",
-  ]
-  network_cidr = "172.17.0.0/16"
+  network_availability_zones = ["us-east-1f"]
+  network_cidr_ipv4 = "172.20.0.0/16"
+  network_cidr_ipv6 = true
+
+  enable_public_subnets = true
+  enable_private_subnets = false
+  enable_public_ipv4 = true
+  enable_public_ipv6 = true
 }
 ```
 
