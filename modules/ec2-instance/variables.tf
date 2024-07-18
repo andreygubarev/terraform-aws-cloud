@@ -42,37 +42,45 @@ variable "instance_launch_template" {
     id      = string
     version = string
   })
-  description = "EC2 instance launch template"
+  description = "EC2 instance launch template (optional)"
   default     = null
 }
 
 variable "instance_type" {
   type        = string
-  description = "EC2 instance type"
+  description = "EC2 instance type (optional if launch template is provided)"
   default     = null
+  validation {
+    condition     = var.instance_type != null || var.instance_launch_template != null
+    error_message = "either instance_type or instance_launch_template must be provided"
+  }
 }
 
 variable "instance_ami" {
   type        = string
-  description = "EC2 instance image ID"
+  description = "EC2 instance image ID (optional if launch template is provided)"
   default     = null
+  validation {
+    condition     = var.instance_ami != null || var.instance_launch_template != null
+    error_message = "either instance_ami or instance_launch_template must be provided"
+  }
 }
 
 variable "instance_profile" {
   type        = string
-  description = "EC2 instance profile"
+  description = "EC2 instance profile (optional)"
   default     = null
 }
 
 variable "instance_keypair" {
   type        = string
-  description = "EC2 instance keypair"
+  description = "EC2 instance keypair (optional)"
   default     = null
 }
 
 variable "instance_userdata" {
   type        = string
-  description = "EC2 instance user data"
+  description = "EC2 instance user data (optional)"
   default     = null
 }
 
