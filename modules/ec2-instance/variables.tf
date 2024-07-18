@@ -50,20 +50,12 @@ variable "instance_type" {
   type        = string
   description = "EC2 instance type (optional if launch template is provided)"
   default     = null
-  validation {
-    condition     = var.instance_type != null || var.instance_launch_template != null
-    error_message = "either instance_type or instance_launch_template must be provided"
-  }
 }
 
 variable "instance_ami" {
   type        = string
   description = "EC2 instance image ID (optional if launch template is provided)"
   default     = null
-  validation {
-    condition     = var.instance_ami != null || var.instance_launch_template != null
-    error_message = "either instance_ami or instance_launch_template must be provided"
-  }
 }
 
 variable "instance_profile" {
