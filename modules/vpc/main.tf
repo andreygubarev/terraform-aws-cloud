@@ -12,9 +12,11 @@ locals {
   enable_dopt = local.enable_ipv4 || local.enable_ipv6
 
   enable_dns64 = local.enable_public_subnets && local.enable_ipv4 && local.enable_ipv6 && var.enable_dns64
+  enable_nat64 = local.enable_dns64 && var.enable_nat64
+
   enable_igw  = local.enable_public_subnets
   enable_eigw = local.enable_private_subnets && local.enable_ipv6
-  enable_nat  = local.enable_private_subnets && local.enable_ipv4 && local.enable_igw
+  enable_nat  = (local.enable_private_subnets || local.enable_nat64) && local.enable_ipv4 && local.enable_igw
   enable_vpce = true
 }
 
@@ -191,6 +193,18 @@ resource "aws_route" "public_ipv6" {
   ]
 }
 
+resource "aws_route" "public_nat64" {
+  for_each = local.enable_public_subnets && local.enable_nat64 && local.enable_nat ? toset(data.aws_availability_zones.this.names) : toset([])
+
+  route_table_id              = aws_route_table.public[each.key].id
+  destination_ipv6_cidr_block = "64:ff9b::/96"
+  nat_gateway_id              = aws_nat_gateway.this[each.key].id
+
+  depends_on = [
+    aws_route_table_association.public,
+  ]
+}
+
 ################################################################################
 # AWS VPC Subnets | NAT Gateway
 ################################################################################
@@ -254,6 +268,8 @@ resource "aws_subnet" "private" {
     local.private_ipv6_netnum + index(data.aws_availability_zones.available.names, each.key)
   ) : null
 
+  enable_dns64 = local.enable_dns64
+
   tags = {
     "Name" = "${var.name}-private-${local.availability_zones[each.key]}"
 
@@ -292,6 +308,18 @@ resource "aws_route" "private_ipv6" {
   route_table_id              = aws_route_table.private[each.key].id
   destination_ipv6_cidr_block = "::/0"
   egress_only_gateway_id      = aws_egress_only_internet_gateway.this[0].id
+}
+
+resource "aws_route" "private_nat64" {
+  for_each = local.enable_private_subnets && local.enable_nat64 && local.enable_nat ? toset(data.aws_availability_zones.this.names) : toset([])
+
+  route_table_id              = aws_route_table.private[each.key].id
+  destination_ipv6_cidr_block = "64:ff9b::/96"
+  nat_gateway_id              = aws_nat_gateway.this[each.key].id
+
+  depends_on = [
+    aws_route_table_association.public,
+  ]
 }
 
 ################################################################################

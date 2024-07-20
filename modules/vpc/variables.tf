@@ -87,3 +87,9 @@ variable "enable_dns64" {
   description = "Enable DNS64 for IPv6"
   default     = false
 }
+
+variable "enable_nat64" {
+  type        = bool
+  description = "Enable NAT64 for IPv6"
+  default     = false
+}
