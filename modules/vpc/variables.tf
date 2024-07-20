@@ -81,3 +81,9 @@ variable "enable_public_ipv6" {
   description = "Enable public IPv6"
   default     = true
 }
+
+variable "enable_dns64" {
+  type        = bool
+  description = "Enable DNS64 for IPv6"
+  default     = false
+}

@@ -11,6 +11,7 @@ locals {
 
   enable_dopt = local.enable_ipv4 || local.enable_ipv6
 
+  enable_dns64 = local.enable_public_subnets && local.enable_ipv4 && local.enable_ipv6 && var.enable_dns64
   enable_igw  = local.enable_public_subnets
   enable_eigw = local.enable_private_subnets && local.enable_ipv6
   enable_nat  = local.enable_private_subnets && local.enable_ipv4 && local.enable_igw
@@ -139,6 +140,8 @@ resource "aws_subnet" "public" {
     local.public_ipv6_netmask,
     local.public_ipv6_netnum + index(data.aws_availability_zones.available.names, each.key)
   ) : null
+
+  enable_dns64 = local.enable_dns64
 
   tags = {
     "Name" = "${var.name}-public-${local.availability_zones[each.key]}"
