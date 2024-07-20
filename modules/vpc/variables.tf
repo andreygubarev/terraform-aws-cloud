@@ -52,6 +52,12 @@ variable "network_cidr_ipv6" {
   default     = true
 }
 
+variable "network_dns" {
+  type        = list(string)
+  description = "DNS servers for the VPC over DHCP Options"
+  default     = ["AmazonProvidedDNS"]
+}
+
 variable "enable_public_subnets" {
   type        = bool
   description = "Enable public subnets"
