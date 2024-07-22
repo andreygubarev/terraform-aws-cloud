@@ -1,6 +1,7 @@
 locals {
-  enable_ipv4 = true # TODO: add support for IPv6 only VPC
-  enable_ipv6 = var.network_cidr_ipv6
+  enable_ipv4      = true # TODO: add support for IPv6 only VPC
+  enable_ipv6      = var.network_cidr_ipv6
+  enable_dualstack = local.enable_ipv4 && local.enable_ipv6
 
   enable_public_subnets  = var.enable_public_subnets
   enable_private_subnets = var.enable_private_subnets
@@ -11,8 +12,8 @@ locals {
 
   enable_dopt = local.enable_ipv4 || local.enable_ipv6
 
-  enable_dns64 = local.enable_public_subnets && local.enable_ipv4 && local.enable_ipv6 && var.enable_dns64
-  enable_nat64 = local.enable_dns64 && var.enable_nat64
+  enable_dns64 = local.enable_dualstack && local.enable_public_subnets && var.enable_dns64
+  enable_nat64 = local.enable_dualstack && local.enable_dns64 && var.enable_nat64
 
   enable_igw  = local.enable_public_subnets
   enable_eigw = local.enable_private_subnets && local.enable_ipv6
