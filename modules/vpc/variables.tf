@@ -93,3 +93,9 @@ variable "enable_nat64" {
   description = "Enable NAT64 for IPv6"
   default     = false
 }
+
+variable "enable_gateway_vpc_endpoints" {
+  type        = bool
+  description = "Enable Gateway VPC endpoint for S3 and DynamoDB"
+  default     = true
+}
