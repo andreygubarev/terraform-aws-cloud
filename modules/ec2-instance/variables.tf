@@ -34,7 +34,7 @@ variable "network_subnets" {
 variable "network_security_groups" {
   type        = list(string)
   description = "AWS Security Group IDs"
-  default     = []
+  default     = null
 }
 
 ################################################################################
