@@ -26,15 +26,3 @@ data "aws_subnet" "this" {
     values = var.network_subnets
   }
 }
-
-data "aws_security_groups" "this" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.this.id]
-  }
-
-  filter {
-    name   = "group-id"
-    values = var.network_security_groups
-  }
-}
