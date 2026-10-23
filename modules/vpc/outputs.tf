@@ -19,8 +19,8 @@ output "network_private_subnets" {
 }
 
 output "network_public_ips" {
-  value       = local.enable_subnets ? [for subnet in sort(data.aws_availability_zones.this.names) : aws_eip.this[subnet].public_ip] : []
-  description = "AWS Public IP"
+  value       = [for eip in aws_eip.this : eip.public_ip]
+  description = "Public IPv4 addresses of the NAT gateways, ordered by availability zone"
 }
 
 output "network_security_groups" {
