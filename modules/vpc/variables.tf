@@ -28,21 +28,26 @@ locals {
 
 variable "network_cidr_ipv4" {
   type        = string
-  description = "Enable IPv4 CIDR block for the VPC"
+  description = "Private IPv4 /16 CIDR block for the VPC"
 
   validation {
     condition     = can(cidrnetmask(var.network_cidr_ipv4))
-    error_message = "network_cidr must be a valid CIDR block"
+    error_message = "network_cidr_ipv4 must be a valid IPv4 CIDR block"
   }
 
   validation {
-    condition     = can(regex("^(10|172|192\\.)", var.network_cidr_ipv4))
-    error_message = "network_cidr must be a private CIDR block"
+    condition     = can(regex("^(10\\.|172\\.(1[6-9]|2[0-9]|3[01])\\.|192\\.168\\.)", var.network_cidr_ipv4))
+    error_message = "network_cidr_ipv4 must be within 10.0.0.0/8, 172.16.0.0/12, or 192.168.0.0/16"
   }
 
   validation {
     condition     = can(regex("/16$", var.network_cidr_ipv4))
-    error_message = "network_cidr must be a /16 CIDR block"
+    error_message = "network_cidr_ipv4 must be a /16 CIDR block"
+  }
+
+  validation {
+    condition     = try(cidrhost(var.network_cidr_ipv4, 0) == split("/", var.network_cidr_ipv4)[0], false)
+    error_message = "network_cidr_ipv4 must use the network address, for example 10.0.0.0/16 instead of 10.0.1.0/16"
   }
 }
 
