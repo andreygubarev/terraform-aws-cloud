@@ -20,6 +20,17 @@ variable "name" {
 variable "network_availability_zones" {
   type        = list(string)
   description = "AWS availability zones for the VPC"
+  nullable    = false
+
+  validation {
+    condition     = length(var.network_availability_zones) > 0
+    error_message = "network_availability_zones must contain at least one availability zone"
+  }
+
+  validation {
+    condition     = length(distinct(var.network_availability_zones)) == length(var.network_availability_zones)
+    error_message = "network_availability_zones must not contain duplicate availability zones"
+  }
 }
 
 locals {

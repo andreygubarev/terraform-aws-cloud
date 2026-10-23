@@ -9,8 +9,6 @@ locals {
   enable_public_ipv4 = local.enable_ipv4 && var.enable_public_ipv4
   enable_public_ipv6 = local.enable_ipv6 && var.enable_public_ipv6
 
-  enable_dopt = local.enable_ipv4 || local.enable_ipv6
-
   enable_dns64 = local.enable_dualstack && local.enable_public_subnets && var.enable_dns64
   enable_nat64 = local.enable_dualstack && local.enable_dns64 && var.enable_nat64
 
@@ -35,6 +33,18 @@ resource "aws_vpc" "this" {
   tags = {
     Name = var.name
   }
+
+  lifecycle {
+    precondition {
+      condition     = !var.enable_dns64 || (local.enable_dualstack && local.enable_public_subnets && var.enable_nat64)
+      error_message = "enable_dns64 requires IPv6, public subnets, and enable_nat64"
+    }
+
+    precondition {
+      condition     = !var.enable_nat64 || var.enable_dns64
+      error_message = "enable_nat64 requires enable_dns64"
+    }
+  }
 }
 
 ################################################################################
@@ -42,8 +52,6 @@ resource "aws_vpc" "this" {
 ################################################################################
 
 resource "aws_vpc_dhcp_options" "this" {
-  count = local.enable_dopt ? 1 : 0
-
   domain_name         = data.aws_region.this.region == "us-east-1" ? "ec2.internal" : "${data.aws_region.this.region}.compute.internal"
   domain_name_servers = var.network_dns
   ntp_servers         = ["169.254.169.123"]
@@ -54,10 +62,8 @@ resource "aws_vpc_dhcp_options" "this" {
 }
 
 resource "aws_vpc_dhcp_options_association" "this" {
-  count = local.enable_dopt ? 1 : 0
-
   vpc_id          = aws_vpc.this.id
-  dhcp_options_id = aws_vpc_dhcp_options.this[0].id
+  dhcp_options_id = aws_vpc_dhcp_options.this.id
 
   depends_on = [
     aws_vpc.this,
@@ -102,7 +108,7 @@ locals {
   public_ipv4_netmask = 6 # 16 + 6 = 22 ~ 1024 IPs
   public_ipv4_netnum  = 0 # start at 0
 
-  # ipv4 private ~ x.x.32.0 - x.x.175.255 (8 subnets, 4096 IPs each)
+  # ipv4 private ~ x.x.32.0 - x.x.159.255 (8 subnets, 4096 IPs each)
   private_ipv4_netmask = 4 # 16 + 4 = 20 ~ 4096 IPs
   private_ipv4_netnum  = 2 # start at 2 to avoid conflicting with the public subnets
 
@@ -177,6 +183,7 @@ resource "aws_route" "public_ipv4" {
   gateway_id             = aws_internet_gateway.this[0].id
 
   depends_on = [
+    aws_internet_gateway_attachment.this,
     aws_route_table_association.public,
   ]
 }
@@ -189,6 +196,7 @@ resource "aws_route" "public_ipv6" {
   gateway_id                  = aws_internet_gateway.this[0].id
 
   depends_on = [
+    aws_internet_gateway_attachment.this,
     aws_route_table_association.public,
   ]
 }
@@ -234,7 +242,7 @@ resource "aws_nat_gateway" "this" {
   }
 
   depends_on = [
-    aws_internet_gateway.this,
+    aws_internet_gateway_attachment.this,
     aws_route.public_ipv4,
     aws_route.public_ipv6,
   ]
@@ -318,7 +326,7 @@ resource "aws_route" "private_nat64" {
   nat_gateway_id              = aws_nat_gateway.this[each.key].id
 
   depends_on = [
-    aws_route_table_association.public,
+    aws_route_table_association.private,
   ]
 }
 
