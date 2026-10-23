@@ -45,7 +45,7 @@ resource "aws_vpc" "this" {
 resource "aws_vpc_dhcp_options" "this" {
   count = local.enable_dopt ? 1 : 0
 
-  domain_name         = "ec2.internal"
+  domain_name         = data.aws_region.this.region == "us-east-1" ? "ec2.internal" : "${data.aws_region.this.region}.compute.internal"
   domain_name_servers = var.network_dns
   ntp_servers         = ["169.254.169.123"]
 
