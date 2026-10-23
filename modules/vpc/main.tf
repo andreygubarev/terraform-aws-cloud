@@ -332,7 +332,7 @@ resource "aws_vpc_endpoint" "s3" {
 
   vpc_id = aws_vpc.this.id
 
-  service_name = "com.amazonaws.${data.aws_region.this.name}.s3"
+  service_name = "com.amazonaws.${data.aws_region.this.region}.s3"
   route_table_ids = concat(
     [for rt in aws_route_table.public : rt.id],
     [for rt in aws_route_table.private : rt.id],
@@ -354,7 +354,7 @@ resource "aws_vpc_endpoint" "dynamodb" {
 
   vpc_id = aws_vpc.this.id
 
-  service_name = "com.amazonaws.${data.aws_region.this.name}.dynamodb"
+  service_name = "com.amazonaws.${data.aws_region.this.region}.dynamodb"
   route_table_ids = concat(
     [for rt in aws_route_table.public : rt.id],
     [for rt in aws_route_table.private : rt.id],
